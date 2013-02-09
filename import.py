@@ -7,7 +7,25 @@ import psycopg2
 import sys
 from datetime import *
 import dateutil.parser
-import ppygis
+import urlparse
+
+# Paths
+path = os.path.dirname(__file__)
+
+# Set up database connection
+urlparse.uses_netloc.append('postgres')
+url = urlparse.urlparse(os.environ['DATABASE_URL'])
+print url
+conn = psycopg2.connect("dbname=%s user=%s password=%s host=%s " % (url.path[1:], url.username, url.password, url.hostname))
+db = conn.cursor()
+
+# Heroku's PostGIS solution is more expensive
+# and is not that necessary, so making it
+# configurable
+use_gis = False
+
+if use_gis:
+  import ppygis
 
 
 def ct(value):
@@ -41,13 +59,6 @@ def pp(value):
   sys.stdout.flush()
 
 
-# Paths
-path = os.path.dirname(__file__)
-
-# Connect to database
-conn = psycopg2.connect('dbname=minnpost_mpd_lpt user=postgres host=localhost')
-db = conn.cursor()
-
 # First, let's clear or create the DB table
 query = """
 DROP INDEX IF EXISTS mpd_lpt_records_timestamp_parsed;
@@ -69,11 +80,15 @@ CREATE TABLE mpd_lpt_records
 WITH (
   OIDS=FALSE
 );
-SELECT AddGeometryColumn('mpd_lpt_records', 'location', 4326, 'POINT', 2);
 CREATE INDEX mpd_lpt_records_timestamp_parsed ON mpd_lpt_records (timestamp_parsed);
 CREATE INDEX mpd_lpt_records_plate ON mpd_lpt_records (plate);
 CREATE INDEX mpd_lpt_records_reader ON mpd_lpt_records (reader);
 """
+
+if use_gis:
+  query = query + """
+    SELECT AddGeometryColumn('mpd_lpt_records', 'location', 4326, 'POINT', 2);
+  """
 
 pp("\n[table] (re)Creating table.")
 db.execute(query)
@@ -86,7 +101,7 @@ for f in files:
   committed = conn.commit()
   
   # Read file
-  input_file = os.path.join(path, '../data/%s' % f)
+  input_file = os.path.join(path, 'data/%s' % f)
   reader = csv.reader(open(input_file, 'rU'), delimiter=',', dialect=csv.excel_tab)
   
   # Import into DB
@@ -101,13 +116,21 @@ for f in files:
       try:
         # Some values don't have lat/lon
         if ct(row[1]) != '' and ct(row[1]) != None:
-          db.execute("""
-            INSERT INTO mpd_lpt_records 
-            (plate, reader, timestamp_text, timestamp_parsed, lat, lon, location) 
-            VALUES (%s, %s, %s, %s, %s, %s, %s)
-          """,
-            (ct(row[0]), ct(row[4]), ct(row[3]), dt(row[3], ''), float(row[1]), float(row[2]),
-            ppygis.Point(float(row[2]), float(row[1]), srid=4326)))
+          if use_gis:
+            db.execute("""
+              INSERT INTO mpd_lpt_records 
+              (plate, reader, timestamp_text, timestamp_parsed, lat, lon, location) 
+              VALUES (%s, %s, %s, %s, %s, %s, %s)
+            """,
+              (ct(row[0]), ct(row[4]), ct(row[3]), dt(row[3], ''), float(row[1]), float(row[2]),
+              ppygis.Point(float(row[2]), float(row[1]), srid=4326)))
+          else:
+            db.execute("""
+              INSERT INTO mpd_lpt_records 
+              (plate, reader, timestamp_text, timestamp_parsed, lat, lon) 
+              VALUES (%s, %s, %s, %s, %s, %s)
+            """,
+              (ct(row[0]), ct(row[4]), ct(row[3]), dt(row[3], ''), float(row[1]), float(row[2])))
         else:
           db.execute("""
             INSERT INTO mpd_lpt_records 

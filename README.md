@@ -8,6 +8,10 @@ A small application to look at the Minneapolis license plate tracking data.  Aim
 1. Install ```virtualenv```
 1. Make a virtualenv and enable it.
 1. Install requirements: ```pip install -r requirements.txt```
+1. Setup postgres database: ```createdb -U postgres -h localhost can_opener````
+    * If using PostGIS: ```createdb -U postgres -h localhost -T template_postgis can_opener````
+1. Set database connection variable: ```export DATABASE_URL="postgres//postgres:@localhost:5432/can_opener"```
+1. Run: ```python import.py```
 
 ## Deployment
 
