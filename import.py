@@ -101,7 +101,7 @@ for f in files:
   committed = conn.commit()
   
   # Read file
-  input_file = os.path.join(path, 'data/%s' % f)
+  input_file = os.path.join('/tmp/%s' % f)
   reader = csv.reader(open(input_file, 'rU'), delimiter=',', dialect=csv.excel_tab)
   
   # Import into DB
