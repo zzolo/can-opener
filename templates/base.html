@@ -6,7 +6,8 @@
 {% block style %}
   {{ super() }}
   
-  <link href="{{ url_for('static', filename='css/can-opener.css') }}" rel="stylesheet">
+  <link href="http://api.tiles.mapbox.com/mapbox.js/v0.6.7/mapbox.css" rel="stylesheet" />
+  <link href="{{ url_for('static', filename='css/can-opener.css') }}" rel="stylesheet" />
 {% endblock style %}
 
 {% block body_content %}
@@ -21,6 +22,8 @@
   
   <!-- Site wide JS additions -->
   <script src="{{ 'js/bootstrap.js'|bootstrap_find_resource }}"></script>
+  <script src="http://api.tiles.mapbox.com/mapbox.js/v0.6.7/mapbox.js"></script>
+  <script src="{{ url_for('static', filename='js/can-opener.js') }}"></script>
   
   <!-- Block to add specific JS for templates -->
   {% block inline_js %}{% endblock inline_js %}
