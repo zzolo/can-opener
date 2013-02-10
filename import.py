@@ -15,7 +15,6 @@ path = os.path.dirname(__file__)
 # Set up database connection
 urlparse.uses_netloc.append('postgres')
 url = urlparse.urlparse(os.environ['DATABASE_URL'])
-print url
 conn = psycopg2.connect("dbname=%s user=%s password=%s host=%s " % (url.path[1:], url.username, url.password, url.hostname))
 db = conn.cursor()
 

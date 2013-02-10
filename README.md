@@ -13,6 +13,7 @@ A small application to look at the Minneapolis license plate tracking data.  Aim
 1. Set database connection variable: ```export DATABASE_URL="postgres//postgres:@localhost:5432/can_opener"```
 1. Run: ```python dl.py``` (this will take a moment)
 1. Run: ```python import.py``` (this will take some time)
+1. To run with debugging on, set envionment variable: ```export DEBUG_APP="True"```
 
 ## Deployment
 

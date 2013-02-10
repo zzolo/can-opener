@@ -1,0 +1,27 @@
+{% extends "bootstrap_responsive.html" %}
+{% import "bootstrap_wtf.html" as wtf %}
+
+{% block title %}Can Opener | A look at license plate tracking data{% endblock title %}
+
+{% block style %}
+  {{ super() }}
+  
+  <link href="{{ url_for('static', filename='css/can-opener.css') }}" rel="stylesheet">
+{% endblock style %}
+
+{% block body_content %}
+  
+  <!-- Main content replacement -->
+  {% block content %}{% endblock content %}
+
+{% endblock body_content %}
+
+{% block bootstrap_js_bottom %}
+  {{ super() }}
+  
+  <!-- Site wide JS additions -->
+  <script src="{{ 'js/bootstrap.js'|bootstrap_find_resource }}"></script>
+  
+  <!-- Block to add specific JS for templates -->
+  {% block inline_js %}{% endblock inline_js %}
+{% endblock bootstrap_js_bottom %}
