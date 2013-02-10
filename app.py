@@ -1,7 +1,10 @@
 import os
 import psycopg2
 import urlparse
-from flask import Flask, render_template
+import json
+import datetime
+from dateutil import tz
+from flask import Flask, render_template, Response
 from flask.ext.bootstrap import Bootstrap
 
 
@@ -30,14 +33,29 @@ if debug_app:
 def index():
 	return render_template('index.html')
 
+
 # Routes for API
-@app.route('/api/license', methods=['GET'])
-def api_license():
-  return output_json()
+@app.route('/api/license/<license>', methods=['GET'])
+def api_license(license):
+  query = "SELECT * FROM mpd_lpt_records WHERE plate = '%s' LIMIT 100" % (license)
+  data = db_query_simple(query)
+  return output_json(data)
+
 
 # Helper functions
 def output_json(data):
-  return Response(json.dumps(data), mimetype = 'application/json')
+  return Response(json.dumps(data, default=json_date_handler), mimetype = 'application/json')
+  
+def db_query_simple(query, args=(), one=False):
+  db.execute(query, args)
+  r = [dict((db.description[i][0], value) for i, value in enumerate(row)) for row in db.fetchall()]
+  return (r[0] if r else None) if one else r
+
+def json_date_handler(obj):
+  if hasattr(obj, 'isoformat'):
+    return obj.isoformat()
+  else:
+    return str(obj)
 
 
 if __name__ == '__main__':
