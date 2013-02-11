@@ -3,6 +3,7 @@ import psycopg2
 import urlparse
 import json
 import datetime
+import re
 from dateutil import tz
 from flask import Flask, render_template, Response
 from flask.ext.bootstrap import Bootstrap
@@ -37,6 +38,7 @@ def index():
 # Routes for API
 @app.route('/api/license/<license>', methods=['GET'])
 def api_license(license):
+  license = re.sub('[\W_]+', '', license)
   query = "SELECT * FROM mpd_lpt_records WHERE LOWER(plate) = LOWER('%s') ORDER BY  timestamp_parsed ASC LIMIT 500" % (license)
   data = db_query_simple(query)
   return output_json(data)
