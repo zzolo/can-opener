@@ -7,6 +7,7 @@ import re
 from dateutil import tz
 from flask import Flask, render_template, Response
 from flask.ext.bootstrap import Bootstrap
+from flask.ext.cache import Cache
 
 
 # Get environement variables
@@ -28,20 +29,34 @@ app.config['BOOTSTRAP_USE_MINIFIED'] = True
 if debug_app:
   app.debug = True
 
+# Set up cache
+cache_config = {
+  'CACHE_TYPE': 'filesystem',
+  'CACHE_THRESHOLD': 1000,
+  'CACHE_DIR': 'cache'
+}
+cache = Cache(config = cache_config)
+cache.init_app(app, config = cache_config)
+
 
 # Routes for app
 @app.route('/')
+@cache.cached(timeout=50)
 def index():
 	return render_template('index.html')
 
 
 # Routes for API
 @app.route('/api/license/<license>', methods=['GET'])
+@cache.cached(timeout=5000)
 def api_license(license):
   license = re.sub('[\W_]+', '', license)
   query = "SELECT * FROM mpd_lpt_records WHERE LOWER(plate) = LOWER('%s') ORDER BY  timestamp_parsed ASC LIMIT 500" % (license)
   data = db_query_simple(query)
-  return output_json(data)
+  response = output_json(data)
+  
+  response.headers['Cache-Control'] = 'public,max-age=2592000';
+  return response
 
 
 # Helper functions
