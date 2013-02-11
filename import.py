@@ -82,6 +82,8 @@ WITH (
 CREATE INDEX mpd_lpt_records_timestamp_parsed ON mpd_lpt_records (timestamp_parsed);
 CREATE INDEX mpd_lpt_records_plate ON mpd_lpt_records (plate);
 CREATE INDEX mpd_lpt_records_reader ON mpd_lpt_records (reader);
+CREATE INDEX mpd_lpt_records_plate_lower ON mpd_lpt_records ((LOWER(plate)));
+CREATE INDEX mpd_lpt_records_reader_lower ON mpd_lpt_records ((LOWER(reader)));
 """
 
 if use_gis:
