@@ -24,16 +24,20 @@ if (!String.prototype.trim) {
     });
   };
 
-  help.makeMarker = function(layer, record, template) {
-    layer.add_feature({
-      geometry: {
-        coordinates: [record.lon, record.lat]
-      },
-      properties: {
-        'marker-size': 'medium',
-        'marker-color': '#222222',
-        'marker-symbol': 'rail',
-        description: template({ d: record })
+  help.makeMarkers = function(layer, records, template) {
+    _.each(records, function(record) {
+      if (record.lat && record.lon) {
+        layer.add_feature({
+          geometry: {
+            coordinates: [record.lon, record.lat]
+          },
+          properties: {
+            'marker-size': 'medium',
+            'marker-color': '#222222',
+            'marker-symbol': 'rail',
+            description: template({ d: record })
+          }
+        });
       }
     });
   };
@@ -51,6 +55,14 @@ if (!String.prototype.trim) {
       }
     });
   };
+  
+  help.loading = function(template) {
+    $('.results-list').html(template({ }));
+  };
+  
+  help.noResults = function(template, plate) {
+    $('.results-list').html(template({ plate: plate }));
+  };
 
   // When page is loaded.
   $(document).ready(function() {
@@ -58,7 +70,9 @@ if (!String.prototype.trim) {
     var templates = {
       popup: _.template($('#template-marker-popup').html()),
       list: _.template($('#template-records-list').html()),
-      attribution: _.template($('#template-attribution').html())
+      attribution: _.template($('#template-attribution').html()),
+      loading: _.template($('#template-loading').html()),
+      noResults: _.template($('#template-no-results').html())
     };
   
     // Show explaning modal
@@ -91,23 +105,36 @@ if (!String.prototype.trim) {
         e.preventDefault();
         var license = $(this).parent().find('.license-plate-query').val().trim();
         
+        // Mark as loading
+        help.loading(templates.loading);
+        
         // Close modal if its open
         $explainModal.modal('hide');
         
+        // Remove markers
+        markerLayer.features([]);
+        
         // Get license plate data
-        $.getJSON('/api/license/' + license, function(data) {
-          data = help.parseRecords(data);
-          markerLayer.features([]);
-          
-          _.each(data, function(r) {
-            if (r.lat && r.lon) {
-              // Add markers to map
-              help.makeMarker(markerLayer, r, templates.popup);
+        $.ajax({
+          url: '/api/license/' + license,
+          dataType: 'json',
+          success: function(data) {
+            data = help.parseRecords(data);
+            
+            if (data.length > 0) {            
+              // Display map markers
+              help.makeMarkers(markerLayer, data, templates.popup);
+              
+              // Make list of non-location records and count of found
+              help.makeList(data, templates.list);
             }
-          });
-          
-          // Make list of non-location records and count of found
-          help.makeList(data, templates.list);
+            else {
+              help.noResults(templates.noResults, license);
+            }
+          },
+          error: function(data) {
+            help.noResults(templates.noResults, license);
+          }
         });
       });
     });

@@ -37,7 +37,7 @@ def index():
 # Routes for API
 @app.route('/api/license/<license>', methods=['GET'])
 def api_license(license):
-  query = "SELECT * FROM mpd_lpt_records WHERE plate = '%s' LIMIT 100" % (license)
+  query = "SELECT * FROM mpd_lpt_records WHERE plate = '%s' LIMIT 500" % (license)
   data = db_query_simple(query)
   return output_json(data)
 
