@@ -2,9 +2,19 @@
 
 {% block content %}
   <div class="app-container">
-    <div id="map-container"></div>
-  
+    <div id="map-container">
+    </div>
+      
     <div class="results-list"></div>
+    
+    <div class="search-box-container">
+      <div class="search-box">
+        <form class="form-inline license-plate-query-form">
+          <input type="text"  placeholder="Enter license plate" class="input-xlarge license-plate-query">
+          <button type="submit" class="btn btn-primary license-plate-query-submit">Search</button>
+        </form>
+      </div>
+    </div>
   </div>
 
   <!-- Modal intial explaining -->
@@ -22,13 +32,17 @@
     
     <div class="modal-footer">
       <form class="form-inline license-plate-query-form">
-        <input type="text"  placeholder="Enter license plate" class="input-xlarge license-plate-query">
+        <input type="text" placeholder="Enter license plate" class="input-xlarge license-plate-query">
         <button type="submit" class="btn btn-primary license-plate-query-submit">Search</button>
       </form>
     </div>
   </div>
   
   <!-- Client side tempaltes -->
+  <script id="template-attribution" type="text/template">
+    <a href="#" class="about-site">About</a> this site.  Get <a href="https://github.com/zzolo/can-opener" target="_blank">code and data</a>.  Mapbox <a href="http://mapbox.com/about/maps" target="_blank">Terms &amp; Feedback</a>.
+  </script>
+  
   <script id="template-marker-popup" type="text/template">
     <div class="license-marker-popup-container">
       License plate <strong><%= d.plate %></strong> tracked on <strong><%= d.date.format('MMM Do, YYYY [at] h:mm A') %></strong> by reader <em><%= d.reader %></em>.
@@ -37,7 +51,7 @@
   
   <script id="template-records-list" type="text/template">
     <div class="license-records-container">
-      <h4>Found <%= records.length %> records</h4>
+      <h4>Found <%= records.length %> records for <%= records[0].plate %></h4>
       
       <% if (records.length > 0) { %>
         <table class="table table-striped">
