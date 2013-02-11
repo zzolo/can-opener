@@ -11,7 +11,7 @@ from flask.ext.bootstrap import Bootstrap
 
 # Get environement variables
 db_url = urlparse.urlparse(os.environ['DATABASE_URL'])
-debug_app = os.environ['DEBUG_APP']
+debug_app = 'DEBUG_APP' in os.environ
 
 # Set up database connection
 urlparse.uses_netloc.append('postgres')
