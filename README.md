@@ -20,4 +20,5 @@ A small application to look at the Minneapolis license plate tracking data.  Aim
 Meant for Heroku.
 
 1. ```heroku create app-name```
-1. 
+1. ```git push heroku master```
+1. (set up database...)
